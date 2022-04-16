@@ -1,0 +1,38 @@
+#This is an example file
+[Body]
+mass = 100
+#position
+xpos = -10
+ypos = -10
+zpos = -10
+#velocity
+xvel = 1.0
+yvel = 1.0
+zvel = 1.0
+#radius of body
+radius = 2
+#gravity flag [0 or 1]
+grav = 0
+#charge in Coulombs
+charge = 0
+#Planar Config [0 or 1]
+allx = 0
+ally = 0
+allz = 0
+[END]
+
+[Body]
+mass = 100
+xpos = 10
+ypos = 10
+zpos = 10
+xvel = -1.0
+yvel = -1.0
+zvel = -1.0
+radius = 2
+grav = 0
+charge = 0
+allx = 0
+ally = 0
+allz = 0
+[END]

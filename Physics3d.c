@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include "StringInputs.h"
 
 //This Struct is the base object in the physics engine
 //It Contains all values that can be set for a body in the simulation
@@ -59,54 +60,67 @@ double k = 9.0 * pow(10,9);
 struct body* Bodies = NULL;
 uint64_t bodycount = 0;
 
+//This contains global config
+struct config {
+    double timeframe;
+    uint64_t iterations;
+} MainConfig;
+
+//Converters
+union dconv {
+    char BData[8];
+    double D;
+};
+union lconv {
+    char BData[8];
+    uint64_t L;
+};
+
 //Loading Code, this is where the above variable are initialised
-void loadBodies(){
-    uint64_t amm = 2; //Placeholder
+void loadBodies(char** args){
+    //First get main commandline settings
+    MainConfig.timeframe = stod(args[3]);
+    MainConfig.iterations = stoui64(args[2]);
+
+    //The Converters
+    union dconv DoubleConverter;
+    union lconv LongConverter;
+
+    //Open file
+    FILE* InputFile = fopen(args[1],"rb");
+
+    //Now Load Bodies
+    fread(&LongConverter.BData,1,8,InputFile);
+    uint64_t amm = LongConverter.L; 
 
     //Assign Main Body Count and Memory
     bodycount = amm;
     struct body* NewBodies = (struct body*)malloc(amm * sizeof(struct body));
+    Bodies = NewBodies;
     
-    printf("Loading Data\n");
+    
+    printf("Loading %li Bodies from %s, iterating %li timeframe %lf\n",amm,args[1],MainConfig.iterations,MainConfig.timeframe);
     for (uint64_t i = 0; i < amm; i++){
-        //Load Loop will be here
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].mass = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].xpos = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].ypos = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].zpos = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].xvel = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].yvel = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].zvel = DoubleConverter.D;
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].radius = DoubleConverter.D;
+        Bodies[i].grav = fgetc(InputFile);
+        fread(&DoubleConverter.BData,1,8,InputFile); Bodies[i].charge = DoubleConverter.D;
+        Bodies[i].allx = fgetc(InputFile);
+        Bodies[i].ally = fgetc(InputFile);
+        Bodies[i].allz = fgetc(InputFile);
+        Bodies[i].ID = i;
+        
     }
 
-    //Test Data [TEST]
-    NewBodies[1].mass = 100;
-    NewBodies[1].xpos = -10;
-    NewBodies[1].ypos = -10;
-    NewBodies[1].zpos = -10;
-    NewBodies[1].xvel = 1.0;
-    NewBodies[1].yvel = 1.0;
-    NewBodies[1].zvel = 1.0;
-    NewBodies[1].radius = 2;
-    NewBodies[1].grav = 0;
-    NewBodies[1].charge = 0;
-    NewBodies[1].BoundTo = NULL;
-    NewBodies[1].ID = 1;
-    NewBodies[1].allx = 0;
-    NewBodies[1].ally = 0;
-    NewBodies[1].allz = 0;
-
-    NewBodies[0].mass = 100;
-    NewBodies[0].xpos = 10;
-    NewBodies[0].ypos = 10;
-    NewBodies[0].zpos = 10;
-    NewBodies[0].xvel = -1.0;
-    NewBodies[0].yvel = -1.0;
-    NewBodies[0].zvel = -1.0;
-    NewBodies[0].radius = 2;
-    NewBodies[0].grav = 0;
-    NewBodies[0].charge = 0;
-    NewBodies[0].BoundTo = NULL;
-    NewBodies[0].ID = 0;
-    NewBodies[0].allx = 0;
-    NewBodies[0].ally = 0;
-    NewBodies[0].allz = 0;
-
+    fclose(InputFile);
     
-    Bodies = NewBodies;
+    
 
 }
 
@@ -116,17 +130,6 @@ double distance(double x1, double y1, double z1, double x2, double y2, double z2
     return pow(pow(x2-x1,2) + pow(y2-y1,2) + pow(z2-z1,2),0.5);
 }
 
-
-
-
-union dconv {
-    char BData[8];
-    double D;
-};
-union lconv {
-    char BData[8];
-    uint64_t L;
-};
 
 
 void dumpLong(uint64_t Inp){
@@ -407,15 +410,20 @@ void timeTick(double time){
 
 }
 
-int main(){
-    loadBodies();
+int main(int argc, char** argv){
+    if (argc > 1){
+        loadBodies(argv);
 
-    //Iterate over frames specified. Test value at the moment [TEST]
-    for (int i = 0; i < 20; i++){
-        outputData();
-        timeTick(1);
-        
-        //printf("Iter\n");
+        //Iterate over frames specified. Test value at the moment [TEST]
+        for (uint64_t i = 0; i < MainConfig.iterations; i++){
+            outputData();
+            timeTick(MainConfig.timeframe);
+        }
     }
+
+    else {
+        printf("Usage: %s <Config File> <Iterations> <Timespan> \nEG: %s Test.phys 200 0.1\n",argv[0],argv[0]);
+    }
+    
 
 }
