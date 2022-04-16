@@ -15,6 +15,4 @@ Implemented So Far:
 
 To Do:
  - Planar Bodies for gravity, charge and collision
- - Command line arguments
- - Reading Objects from File.
  - Rigid Body Physics
