@@ -277,9 +277,10 @@ void timeTick(double time){
     double netyforce;
     double netzforce;
 
-    //Angles for breaking down vectors
-    double azimuth;
-    double altitude;
+    //The Unit Vector
+    double UnitX;
+    double UnitY;
+    double UnitZ;
 
     
     for (i = 0; i < bodycount; i++){
@@ -306,9 +307,12 @@ void timeTick(double time){
             if (i != j){
                 //Get Distance between Body i and Body j
                 netdist = distance(Bodies[i].xpos,Bodies[i].ypos,Bodies[i].zpos,Bodies[j].xpos,Bodies[j].ypos,Bodies[j].zpos);
-                //Find angles between them
-                azimuth = atan((Bodies[j].ypos - Bodies[i].ypos)/(Bodies[j].xpos - Bodies[i].xpos));
-                altitude = atan((Bodies[j].zpos - Bodies[i].zpos)/pow(pow(Bodies[j].xpos - Bodies[i].xpos,2)+pow(Bodies[j].ypos - Bodies[i].ypos,2),0.5));
+                
+                //Find the Unit Vector
+                UnitX = (Bodies[i].xpos - Bodies[j].xpos)/netdist;
+                UnitY = (Bodies[i].ypos - Bodies[j].ypos)/netdist;
+                UnitZ = (Bodies[i].zpos - Bodies[j].zpos)/netdist;
+               
 
                 //Do Collision Physics
                 //printf("Sep By %lf\n",netdist);
@@ -336,9 +340,9 @@ void timeTick(double time){
                     netforce = (G * Bodies[i].mass * Bodies[j].mass) / pow(netdist,2);
                     
                     //Break up the net force into components
-                    netzforce += sin(altitude)*netforce;
-                    netyforce += cos(altitude)*sin(azimuth)*netforce;
-                    netxforce += cos(altitude)*cos(azimuth)*netforce;
+                    netzforce += UnitZ*netforce;
+                    netyforce += UnitY*netforce;
+                    netxforce += UnitX*netforce;
 
                 }
 
@@ -357,9 +361,9 @@ void timeTick(double time){
                     }
 
                     //Break up the net force into components
-                    netzforce += sin(altitude)*netforce;
-                    netyforce += cos(altitude)*sin(azimuth)*netforce;
-                    netxforce += cos(altitude)*cos(azimuth)*netforce;
+                    netzforce += UnitZ*netforce;
+                    netyforce += UnitY*netforce;
+                    netxforce += UnitX*netforce;
                 }
 
             }

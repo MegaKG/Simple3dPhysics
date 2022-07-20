@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/media/kaelan/Disk/Dev/Simple3dPhysics'
+gcc Physics3d.c -lm -o Physics3d
+gcc ParseOutput.c -o OutputDecoder
+make: Leaving directory '/media/kaelan/Disk/Dev/Simple3dPhysics'
+ 
